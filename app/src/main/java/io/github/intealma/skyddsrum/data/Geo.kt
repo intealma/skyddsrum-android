@@ -20,12 +20,33 @@ object Geo {
     }
 
     /** The [count] shelters closest to ([lat], [lon]), nearest first. */
-    fun nearest(shelters: List<Shelter>, lat: Double, lon: Double, count: Int = 10): List<ShelterWithDistance> =
-        shelters.asSequence()
-            .map { ShelterWithDistance(it, haversineMeters(lat, lon, it.lat, it.lon)) }
+    fun nearest(shelters: List<Shelter>, lat: Double, lon: Double, count: Int = 10): List<ShelterWithDistance> {
+        val k = minOf(count, shelters.size)
+        if (k <= 0) return emptyList()
+        // One pass with a cheap equirectangular distance keeps the k best (no sort of all 63k);
+        // exact Haversine distances are then computed for those k only.
+        val cosLat = cos(Math.toRadians(lat))
+        val bestIdx = IntArray(k) { -1 }
+        val bestD = DoubleArray(k) { Double.MAX_VALUE }
+        for (i in shelters.indices) {
+            val s = shelters[i]
+            val dx = (s.lon - lon) * cosLat
+            val dy = s.lat - lat
+            val d = dx * dx + dy * dy
+            if (d >= bestD[k - 1]) continue
+            var j = k - 1
+            while (j > 0 && bestD[j - 1] > d) {
+                bestD[j] = bestD[j - 1]
+                bestIdx[j] = bestIdx[j - 1]
+                j--
+            }
+            bestD[j] = d
+            bestIdx[j] = i
+        }
+        return bestIdx.filter { it >= 0 }
+            .map { ShelterWithDistance(shelters[it], haversineMeters(lat, lon, shelters[it].lat, shelters[it].lon)) }
             .sortedBy { it.meters }
-            .take(count)
-            .toList()
+    }
 
     /** "850 m", "1.2 km", "37 km". */
     fun formatDistance(meters: Double): String = when {

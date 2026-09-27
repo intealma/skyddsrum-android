@@ -1,6 +1,7 @@
 package io.github.intealma.skyddsrum.ui
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.intealma.skyddsrum.R
@@ -85,7 +86,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         viewModelScope.launch {
+            val started = System.currentTimeMillis()
             val list = ShelterRepository.load(getApplication())
+            Log.i("Skyddsrum", "Loaded ${list.size} shelters in ${System.currentTimeMillis() - started} ms")
             _shelters.value = list
             _municipalities.value = ShelterRepository.municipalities(list)
         }

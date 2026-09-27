@@ -30,14 +30,16 @@ class LocationProvider(private val context: Context) {
         val providers = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
             .filter { runCatching { lm.isProviderEnabled(it) }.getOrDefault(false) }
 
+        val lastKnown = lm.allProviders
+            .mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
+            .maxByOrNull { it.time }
+        // In an emergency speed matters more than a perfect fix: a fix from the last two minutes is good enough.
+        if (lastKnown != null && System.currentTimeMillis() - lastKnown.time < RECENT_MS) return lastKnown
+
         val fresh = withTimeoutOrNull(timeoutMs) {
             providers.firstNotNullOfOrNull { provider -> requestOnce(lm, provider) }
         }
-        if (fresh != null) return fresh
-        // Fall back to the most recent known fix from any provider.
-        return lm.allProviders
-            .mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
-            .maxByOrNull { it.time }
+        return fresh ?: lastKnown
     }
 
     @SuppressLint("MissingPermission")
@@ -49,4 +51,8 @@ class LocationProvider(private val context: Context) {
                 if (cont.isActive) cont.resume(location)
             }
         }
+
+    private companion object {
+        const val RECENT_MS = 2 * 60 * 1000L
+    }
 }

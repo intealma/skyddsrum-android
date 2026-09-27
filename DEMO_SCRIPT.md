@@ -15,7 +15,9 @@ emulator's own recorder: *Extended controls → Record and playback*.
    - Search for **Linköping** (or type latitude `58.4108`, longitude `15.6214`).
    - Click **Set location**. Close the panel.
 4. Open the Map tab once so the tiles around Linköping are cached, then go back to Home.
-5. Optional: set the phone language to English for the video (the app also runs in Swedish).
+5. Tap **Directions** once and press **Skip** on Google Maps' first-run screen, so it goes straight to the pin
+   during recording.
+6. Optional: set the phone language to English for the video (the app also runs in Swedish).
 
 ## Script
 

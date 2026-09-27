@@ -24,9 +24,9 @@ people are stressed. This app is built for that situation:
 
 ## Screenshots
 
-| Home | Nearest shelter | Map | Premium paywall | My places (Premium) |
-|---|---|---|---|---|
-| ![Home](docs/screenshots/home.png) | ![Detail](docs/screenshots/detail.png) | ![Map](docs/screenshots/map.png) | ![Paywall](docs/screenshots/paywall.png) | ![Places](docs/screenshots/places.png) |
+| Home: 10 nearest | One tap: closest shelter | Clustered map |
+|---|---|---|
+| <img src="docs/screenshots/home.png" width="250" /> | <img src="docs/screenshots/detail.png" width="250" /> | <img src="docs/screenshots/map.png" width="250" /> |
 
 ## Features
 
