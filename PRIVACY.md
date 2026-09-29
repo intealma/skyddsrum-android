@@ -11,4 +11,4 @@ Last updated: 2026-09-29
   we do not collect your name, email or payment details.
 - No ads, no analytics, no tracking.
 
-Questions: open an issue at https://github.com/intealma/skyddsrum-android/issues
+Questions: open an issue at https://github.com/intealma/shelter-locator/issues

@@ -9,4 +9,4 @@ Last updated: 2026-09-29
 - Finding shelters is always free. Premium (subscription or one-time Supporter purchase) only adds convenience
   features and supports the project. Subscriptions renew until cancelled in your app store account.
 
-Questions: open an issue at https://github.com/intealma/skyddsrum-android/issues
+Questions: open an issue at https://github.com/intealma/shelter-locator/issues

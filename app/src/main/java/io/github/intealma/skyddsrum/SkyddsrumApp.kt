@@ -21,6 +21,6 @@ class SkyddsrumApp : Application() {
     }
 
     companion object {
-        const val SOURCE_URL = "https://github.com/intealma/skyddsrum-android"
+        const val SOURCE_URL = "https://github.com/intealma/shelter-locator"
     }
 }
