@@ -1,8 +1,8 @@
-# Skyddsrum: find the nearest shelter in Sweden
+# Shelter Locator: find the nearest shelter in Sweden
 
-<img src="art/icon-1024.png" alt="Skyddsrum app icon: a yellow shield with a house" width="120" align="right" />
+<img src="art/icon-1024.png" alt="Shelter Locator app icon: white outline square with a triangle on black" width="120" align="right" />
 
-**Skyddsrum** is a native Android app (Kotlin + Jetpack Compose) that finds the nearest public
+**Shelter Locator** is a native Android app (Kotlin + Jetpack Compose) that finds the nearest public
 air-raid shelter (*skyddsrum*) in Sweden in one tap. All **63,413 shelters** are bundled in the
 app, so finding one works **without internet**.
 
@@ -108,7 +108,7 @@ In the emulator, Test Store purchases show a RevenueCat test dialog where you ch
 
 ## Design decisions
 
-- **Look and feel.** Same visual language as the Skyddsrum website: always dark, black background, white line
+- **Look and feel.** Same visual language as the Shelter Locator website: always dark, black background, white line
   icons, one red accent, small uppercase labels, [Nunito Sans](https://github.com/googlefonts/NunitoSans)
   (SIL Open Font License 1.1, see [`licenses/NunitoSans-OFL.txt`](licenses/NunitoSans-OFL.txt)), and the same
   ASCII intro that dissolves on start (tap to skip). The map uses standard OSM tiles drawn in inverted greyscale
@@ -126,8 +126,8 @@ In the emulator, Test Store purchases show a RevenueCat test dialog where you ch
   Web Mercator grid per zoom level (precomputed on a background thread) and draws them directly on the canvas.
 - **No Google Play services.** Location uses the platform `LocationManager`, so the app also works on
   de-Googled phones.
-- **Original icon.** A shield with a house. It deliberately avoids the international civil defence sign
-  (blue triangle on orange), which is a protected emblem under the Geneva Conventions.
+- **Icon.** The website's own line mark (outline square with a triangle), white on black. It deliberately does not
+  use the protected civil-defence colours (blue triangle on orange ground, Geneva Conventions Additional Protocol I).
 
 ## Data source and licenses
 

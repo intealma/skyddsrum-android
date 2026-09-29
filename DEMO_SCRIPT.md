@@ -7,7 +7,7 @@ emulator's own recorder: *Extended controls → Record and playback*.
 
 1. Build and install: `./gradlew installDebug`. Make sure `REVENUECAT_API_KEY` in `local.properties`
    holds your **Test Store** key, and that the `default` offering has a paywall (see README).
-2. Start from a clean state: *Settings → Apps → Skyddsrum → Storage → Clear storage*, so the
+2. Start from a clean state: *Settings → Apps → Shelter Locator → Storage → Clear storage*, so the
    location permission prompt and the locked premium screen appear.
 3. **Set the emulator location to Linköping:**
    - Click `⋯` (**Extended controls**) in the emulator's side toolbar.
@@ -26,7 +26,7 @@ emulator's own recorder: *Extended controls → Record and playback*.
 *On screen: app icon, then the Home screen.*
 
 > "If the sirens went off right now, would you know where your nearest shelter is? Sweden has over
-> sixty thousand public shelters, but almost nobody knows theirs. **Skyddsrum** finds the closest one
+> sixty thousand public shelters, but almost nobody knows theirs. **Shelter Locator** finds the closest one
 > in a single tap, and it works offline, because all 63,000 shelters are built into the app."
 
 ### 2. Core flow: nearest shelters in Linköping, routes, directions (0:20–1:00)
@@ -75,9 +75,9 @@ green routes grow from your position to three numbered shelters.
 > "I'm a student in Sweden, and I built this because preparedness shouldn't depend on a good connection
 > or on knowing where to look. It's open source under MIT, it runs on open government data and
 > OpenStreetMap, and safety features stay free for everyone, forever. Premium just helps keep it running.
-> Skyddsrum: calm, fast help to find safety."
+> Shelter Locator: calm, fast help to find safety."
 
-*End card:* app icon, the text "Skyddsrum · open source (MIT)", and the GitHub URL.
+*End card:* app icon, the text "Shelter Locator · open source (MIT)", and the GitHub URL.
 
 ## Checklist for the submission
 

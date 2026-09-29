@@ -1,34 +1,21 @@
-"""Render the 1024x1024 app icon (same geometry as res/drawable/ic_launcher_foreground.xml)."""
+"""Render the 1024x1024 store icon: the website's line mark (square + triangle), white on black.
+Same geometry as res/drawable/ic_launcher_foreground.xml (108-unit adaptive-icon viewport)."""
 from pathlib import Path
 from PIL import Image, ImageDraw
 
-SIZE, SS = 1024, 4                 # output size, supersampling factor
-VIEW_MIN, VIEW_SPAN = 14.0, 80.0   # crop of the 108-unit adaptive-icon viewport
-TEAL, AMBER = (0x12, 0x3C, 0x44), (0xF4, 0xB9, 0x42)
+SIZE, SS = 1024, 4                  # output size, supersampling factor
+VIEW_MIN, VIEW_SPAN = 21.0, 66.0    # crop of the 108-unit viewport so the mark fills the store icon
+k = SIZE * SS / VIEW_SPAN
 
-def cubic(p0, p1, p2, p3, n=48):
-    for i in range(1, n + 1):
-        t = i / n
-        u = 1 - t
-        yield (u**3 * p0[0] + 3 * u*u*t * p1[0] + 3 * u*t*t * p2[0] + t**3 * p3[0],
-               u**3 * p0[1] + 3 * u*u*t * p1[1] + 3 * u*t*t * p2[1] + t**3 * p3[1])
+def tx(x, y):
+    return ((x - VIEW_MIN) * k, (y - VIEW_MIN) * k)
 
-def tx(pts):
-    k = SIZE * SS / VIEW_SPAN
-    return [((x - VIEW_MIN) * k, (y - VIEW_MIN) * k) for x, y in pts]
-
-shield = [(54, 24), (78, 32), (78, 54)]
-shield += cubic((78, 54), (78, 68), (68, 78), (54, 84))
-shield += cubic((54, 84), (40, 78), (30, 68), (30, 54))
-shield += [(30, 32)]
-house = [(38, 54), (54, 40), (70, 54), (66, 54), (66, 70), (42, 70), (42, 54)]
-door = [(50, 70), (50, 60), (58, 60), (58, 70)]
-
-img = Image.new("RGB", (SIZE * SS, SIZE * SS), TEAL)
+img = Image.new("RGB", (SIZE * SS, SIZE * SS), (0, 0, 0))
 d = ImageDraw.Draw(img)
-d.polygon(tx(shield), fill=AMBER)
-d.polygon(tx(house), fill=TEAL)
-d.polygon(tx(door), fill=AMBER)
+w = round(3 * k)
+d.rounded_rectangle([tx(34, 34), tx(74, 74)], radius=2.7 * k, outline=(255, 255, 255), width=w)
+tri = [tx(54, 43.3), tx(67.3, 63.3), tx(40.7, 63.3)]
+d.line(tri + [tri[0], tri[1]], fill=(255, 255, 255), width=w, joint="curve")
 out = Path(__file__).resolve().parent.parent / "art/icon-1024.png"
 img.resize((SIZE, SIZE), Image.LANCZOS).save(out)
 print("Wrote", out)
