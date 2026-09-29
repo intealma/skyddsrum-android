@@ -36,6 +36,7 @@ people are stressed. This app is built for that situation:
 | **Find nearest shelter**: one tap shows the **3 best shelters by real travel time** with routes on the map | See the 3 nearest shelters for each saved place |
 | **Walk / Bike / Car / Transit** switch; transit shows step-by-step legs (bus, train, changes) | Thank-you status in Settings |
 | List of the 10 nearest shelters (straight line, fully offline) | |
+| **Live status**: people checked in vs capacity, needs, skills, supplies and latest arrivals per shelter; full shelters are skipped when picking the best 3 | |
 | Fallback when location is denied: choose a municipality | |
 | Shelter details: address, capacity, distance | |
 | **Directions** via `geo:` intent (any maps app), with OSM web fallback | |
@@ -52,6 +53,9 @@ Requirements: Android Studio (2026.1 or newer), Android SDK 37, an emulator such
    sdk.dir=/path/to/Android/Sdk
    REVENUECAT_API_KEY=test_xxxxxxxxxxxxxxxxxxxxxxxx
    ```
+
+   Optional: `SUPABASE_URL=...` and `SUPABASE_ANON_KEY=...` from the Shelter Locator website's Supabase project
+   enable the live status (read-only). Without them the live sections are hidden.
 
    Optional: add `TRAFIKLAB_API_KEY=...` (free [ResRobot v2.1](https://www.trafiklab.se/api/our-apis/resrobot-v21/) key)
    to get public-transit routes. Without it, transit falls back to a direct line.
@@ -122,6 +126,11 @@ In the emulator, Test Store purchases show a RevenueCat test dialog where you ch
   ([`data/Routing.kt`](app/src/main/java/io/github/intealma/skyddsrum/data/Routing.kt)). Transit: the 8 closest are
   planned with ResRobot (max 4 requests at once). Shelters closer than any stop get a walking route. Results are
   cached per mode and position; without network the app draws a direct line, so it never leaves you without an answer.
+- **Live status, read-only.** People check in on the Shelter Locator website; the app reads the same public
+  Supabase views (`shelter_status`, `shelter_activity`) every 30 s while it is open
+  ([`data/LiveStatus.kt`](app/src/main/java/io/github/intealma/skyddsrum/data/LiveStatus.kt)). The views hold only
+  aggregates and headcounts, no names. Resource levels and arrival grouping use the website's rules. If the backend
+  is unreachable, the app says "Live status unavailable" and everything else keeps working.
 - **Map performance.** 63k markers would freeze osmdroid, so a custom overlay clusters shelters on a
   Web Mercator grid per zoom level (precomputed on a background thread) and draws them directly on the canvas.
 - **No Google Play services.** Location uses the platform `LocationManager`, so the app also works on

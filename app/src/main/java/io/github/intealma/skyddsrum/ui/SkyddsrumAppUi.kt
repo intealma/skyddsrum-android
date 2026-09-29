@@ -98,6 +98,8 @@ private fun AppContent(vm: AppViewModel) {
     val isPremium by vm.isPremium.collectAsStateWithLifecycle()
     val savedPlaces by vm.savedPlaces.collectAsStateWithLifecycle()
     val routes by vm.routes.collectAsStateWithLifecycle()
+    val live by vm.liveSnapshot.collectAsStateWithLifecycle()
+    val selectedActivity by vm.selectedActivity.collectAsStateWithLifecycle()
 
     var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
     var showCityPicker by remember { mutableStateOf(false) }
@@ -183,6 +185,9 @@ private fun AppContent(vm: AppViewModel) {
                 locating = locating,
                 message = message,
                 nearest = nearest,
+                live = live,
+                liveConfigured = vm.liveConfigured,
+                addressOf = vm::addressOf,
                 onFindNearest = ::findNearest,
                 onChangeOrigin = { routesAfterPick = false; showCityPicker = true },
                 onOpen = vm::select,
@@ -199,6 +204,7 @@ private fun AppContent(vm: AppViewModel) {
                         focus = mapFocus,
                         selectedId = highlightedId,
                         routes = routes,
+                        statuses = live?.statuses.orEmpty(),
                         locating = locating,
                         onShelterTap = { vm.select(it) },
                         onLocate = { if (routes != null) vm.clearRoutes() else findNearest() },
@@ -255,6 +261,10 @@ private fun AppContent(vm: AppViewModel) {
     selected?.let { selection ->
         ShelterDetailSheet(
             selection = selection,
+            liveAvailable = live != null,
+            status = live?.statuses?.get(selection.item.shelter.id),
+            activity = selectedActivity,
+            liveConfigured = vm.liveConfigured,
             onShowOnMap = { shelter ->
                 vm.focusMapOn(shelter)
                 vm.dismissSelected()

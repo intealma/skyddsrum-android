@@ -46,7 +46,13 @@ green routes grow from your position to three numbered shelters.
 
 > "Tap one for the details, and Directions hands off to your maps app."
 
-*On screen:* **Home** tab: the 10 nearest in a plain list, which works fully offline.
+*On screen:* tap a shelter's **LIVE** section: people inside vs capacity, water/food levels, medical staff,
+supplies and latest arrivals, from people who checked in.
+
+> "And it's live: I can see how full a shelter is and what people there need. Full shelters are skipped
+> automatically when the app picks the best three."
+
+*On screen:* **Home** tab: the live summary and the 10 nearest in a plain list, which works fully offline.
 
 > "And with no network at all, the full list of shelters is still on the phone. None of this is behind a paywall."
 

@@ -12,7 +12,11 @@ import io.github.intealma.skyddsrum.data.Route
 import io.github.intealma.skyddsrum.data.RoutedShelter
 import io.github.intealma.skyddsrum.data.Router
 import io.github.intealma.skyddsrum.data.TravelMode
+import io.github.intealma.skyddsrum.data.ActivityEvent
 import io.github.intealma.skyddsrum.data.Geo
+import io.github.intealma.skyddsrum.data.LiveMath
+import io.github.intealma.skyddsrum.data.LiveRepository
+import io.github.intealma.skyddsrum.data.LiveSnapshot
 import io.github.intealma.skyddsrum.data.GeoPlace
 import io.github.intealma.skyddsrum.data.LocationProvider
 import io.github.intealma.skyddsrum.data.PlaceSlot
@@ -23,6 +27,9 @@ import io.github.intealma.skyddsrum.data.ShelterWithDistance
 import io.github.intealma.skyddsrum.premium.Premium
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -56,7 +63,10 @@ data class RoutesUi(
     val items: List<RoutedShelter>,
     val lines: List<List<LatLon>>,
     val linesVersion: Int,
+    val skippedFull: Int = 0,
 )
+
+private const val LIVE_REFRESH_MS = 30_000L
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -80,6 +90,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _message = MutableStateFlow<Int?>(null)
     val message: StateFlow<Int?> = _message.asStateFlow()
 
+    private val _selectedIdFlow = MutableStateFlow<String?>(null)
     private val _selected = MutableStateFlow<Selection?>(null)
     /** Shelter shown in the detail sheet. */
     val selected: StateFlow<Selection?> = _selected.asStateFlow()
@@ -88,6 +99,35 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         userAgent = "${BuildConfig.APPLICATION_ID}/${BuildConfig.VERSION_NAME} (+${SkyddsrumApp.SOURCE_URL})",
         trafiklabKey = BuildConfig.TRAFIKLAB_API_KEY,
     )
+    private val live = LiveRepository(
+        baseUrl = BuildConfig.SUPABASE_URL,
+        anonKey = BuildConfig.SUPABASE_ANON_KEY,
+        userAgent = "${BuildConfig.APPLICATION_ID}/${BuildConfig.VERSION_NAME}",
+    )
+    val liveConfigured: Boolean get() = live.isConfigured
+
+    /**
+     * Live check-in status from the website's backend, refreshed every 30 s while the UI is visible.
+     * Null = not loaded or unavailable (offline, project paused); the app works without it.
+     */
+    val liveSnapshot: StateFlow<LiveSnapshot?> = flow {
+        while (true) {
+            emit(live.snapshot())
+            delay(LIVE_REFRESH_MS)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Recent arrivals at the shelter open in the detail sheet. */
+    val selectedActivity: StateFlow<List<ActivityEvent>?> = MutableStateFlow<List<ActivityEvent>?>(null).let { out ->
+        viewModelScope.launch {
+            _selectedIdFlow.collectLatest { id ->
+                out.value = null
+                if (id != null) out.value = live.activity(id)
+            }
+        }
+        out.asStateFlow()
+    }
+
     private val _routes = MutableStateFlow<RoutesUi?>(null)
     val routes: StateFlow<RoutesUi?> = _routes.asStateFlow()
     private var routesJob: Job? = null
@@ -127,6 +167,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             _municipalities.value = ShelterRepository.municipalities(list)
         }
     }
+
+    private val byId: Map<String, Shelter> by lazy { _shelters.value.orEmpty().associateBy { it.id } }
+
+    /** Address for a shelter id (for live arrivals); null until the data has loaded. */
+    fun addressOf(id: String): String? = if (_shelters.value == null) null else byId[id]?.address
 
     fun hasLocationPermission() = location.hasPermission()
 
@@ -182,18 +227,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         )
         routesJob?.cancel()
         routesJob = viewModelScope.launch {
-            val final = router.best3(mode, origin, list) { interim ->
-                _routes.update { cur -> cur?.takeIf { it.mode == mode }?.copy(loading = false, items = interim) ?: cur }
+            val statuses = liveSnapshot.value?.statuses.orEmpty()
+            val isFull: (Shelter) -> Boolean = { LiveMath.isFull(statuses[it.id], it.capacity) }
+            val final = router.best3(mode, origin, list, isFull) { interim ->
+                _routes.update { cur ->
+                    cur?.takeIf { it.mode == mode }?.copy(loading = false, items = interim.items, skippedFull = interim.skippedFull) ?: cur
+                }
             }
             _routes.update { cur ->
                 cur?.takeIf { it.mode == mode }?.copy(
                     loading = false,
-                    items = final,
-                    lines = final.map { it.route.points },
+                    items = final.items,
+                    lines = final.items.map { it.route.points },
                     linesVersion = cur.linesVersion + 1,
+                    skippedFull = final.skippedFull,
                 ) ?: cur
             }
-            if (prefetchOthers) router.prefetch(mode, origin, list)
+            if (prefetchOthers) router.prefetch(mode, origin, list, isFull)
         }
     }
 
@@ -206,6 +256,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val o = _origin.value?.place
         val meters = if (o != null) Geo.haversineMeters(o.lat, o.lon, routed.shelter.lat, routed.shelter.lon) else Double.NaN
         _selected.value = Selection(ShelterWithDistance(routed.shelter, meters), routed.route, mode)
+        _selectedIdFlow.value = routed.shelter.id
         _highlightedId.value = routed.shelter.id
         _mapFocus.value = MapFocus(routed.shelter.lat, routed.shelter.lon, 16.0)
     }
@@ -218,11 +269,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun select(item: ShelterWithDistance) {
         _selected.value = Selection(item)
+        _selectedIdFlow.value = item.shelter.id
         _highlightedId.value = item.shelter.id
     }
 
     fun dismissSelected() {
         _selected.value = null
+        _selectedIdFlow.value = null
     }
 
     fun focusMapOn(shelter: Shelter) {

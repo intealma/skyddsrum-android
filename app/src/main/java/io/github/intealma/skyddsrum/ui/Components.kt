@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.intealma.skyddsrum.R
 import io.github.intealma.skyddsrum.data.Geo
+import io.github.intealma.skyddsrum.data.LiveMath
+import io.github.intealma.skyddsrum.data.ShelterStatus
 import io.github.intealma.skyddsrum.data.ShelterWithDistance
 import io.github.intealma.skyddsrum.ui.theme.Black
 import io.github.intealma.skyddsrum.ui.theme.Line
@@ -106,7 +108,7 @@ fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
 
 /** One row in a nearest-shelters list: red rank dot, address, distance. */
 @Composable
-fun ShelterRow(rank: Int, item: ShelterWithDistance, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun ShelterRow(rank: Int, item: ShelterWithDistance, onClick: () -> Unit, modifier: Modifier = Modifier, status: ShelterStatus? = null) {
     Row(
         modifier.fillMaxWidth().panel().clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -118,12 +120,21 @@ fun ShelterRow(rank: Int, item: ShelterWithDistance, onClick: () -> Unit, modifi
         Column(Modifier.weight(1f)) {
             Text(item.shelter.address, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(1.dp))
-            Text(
-                "${Geo.formatDistance(item.meters)} · " +
-                    pluralStringResource(R.plurals.capacity_people, item.shelter.capacity, item.shelter.capacity),
-                style = MaterialTheme.typography.bodySmall,
-                color = TextMuted,
-            )
+            Row {
+                Text(
+                    "${Geo.formatDistance(item.meters)} · " +
+                        pluralStringResource(R.plurals.capacity_people, item.shelter.capacity, item.shelter.capacity),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextMuted,
+                )
+                occupancyText(status, item.shelter.capacity)?.let {
+                    Text(
+                        " · $it",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (LiveMath.isFull(status, item.shelter.capacity)) LevelRed else LevelGreen,
+                    )
+                }
+            }
         }
     }
 }

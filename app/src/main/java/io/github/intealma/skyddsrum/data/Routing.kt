@@ -62,6 +62,9 @@ data class Route(
 
 data class RoutedShelter(val shelter: Shelter, val route: Route)
 
+/** The chosen 3 plus how many faster shelters were skipped because they are already full. */
+data class Best3(val items: List<RoutedShelter>, val skippedFull: Int)
+
 /**
  * Port of the website's "3 nearest by real travel time" logic:
  * - walk/bike/car: one OSRM Table (matrix) call ranks the 30 closest shelters (straight line) by real
@@ -85,16 +88,15 @@ class Router(private val userAgent: String, private val trafiklabKey: String) {
         mode: TravelMode,
         origin: LatLon,
         shelters: List<Shelter>,
-        onInterim: (List<RoutedShelter>) -> Unit = {},
-    ): List<RoutedShelter> = coroutineScope {
+        isFull: (Shelter) -> Boolean = { false },
+        onInterim: (Best3) -> Unit = {},
+    ): Best3 = coroutineScope {
         val key = originKey(origin)
         if (mode == TravelMode.TRANSIT) {
             val pool = Geo.nearest(shelters, origin.lat, origin.lon, TRANSIT_CANDIDATES).map { it.shelter }
             val limit = Semaphore(4)
             val routes = pool.map { s -> async { limit.withPermit { cachedRoute(mode, key, origin, s).await() } } }.awaitAll()
-            return@coroutineScope pool.zip(routes) { s, r -> RoutedShelter(s, r) }
-                .sortedBy { it.route.rankMinutes }
-                .take(3)
+            return@coroutineScope pickAvailable(pool.zip(routes) { s, r -> RoutedShelter(s, r) }.sortedBy { it.route.rankMinutes }, isFull)
         }
 
         val wide = Geo.nearest(shelters, origin.lat, origin.lon, MATRIX_CANDIDATES).map { it.shelter }
@@ -103,26 +105,34 @@ class Router(private val userAgent: String, private val trafiklabKey: String) {
             scope.async { fetchTravelMatrix(mode, origin, wide.map { LatLon(it.lat, it.lon) }) }
         }.await()
         if (matrix == null) matrixCache.remove(matrixKey) // retry next time (e.g. back online)
-        val chosen = wide.mapIndexed { i, s ->
+        val ranked = wide.mapIndexed { i, s ->
             val straightKm = Geo.haversineMeters(origin.lat, origin.lon, s.lat, s.lon) / 1000
             val cell = matrix?.getOrNull(i)
             RoutedShelter(
                 s,
                 Route(emptyList(), cell?.distanceKm ?: straightKm, cell?.durationMin ?: (straightKm * 15), approx = false),
             )
-        }.sortedBy { it.route.rankMinutes }.take(3)
+        }.sortedBy { it.route.rankMinutes }
+        val chosen = pickAvailable(ranked, isFull)
         onInterim(chosen)
 
-        chosen.map { async { RoutedShelter(it.shelter, cachedRoute(mode, key, origin, it.shelter).await()) } }.awaitAll()
+        val routed = chosen.items.map { async { RoutedShelter(it.shelter, cachedRoute(mode, key, origin, it.shelter).await()) } }.awaitAll()
+        chosen.copy(items = routed)
+    }
+
+    /** Like the website: skip shelters already at capacity, unless that would leave fewer than 3. */
+    private fun pickAvailable(ranked: List<RoutedShelter>, isFull: (Shelter) -> Boolean): Best3 {
+        val available = ranked.filterNot { isFull(it.shelter) }
+        return if (available.size >= 3) Best3(available.take(3), ranked.size - available.size) else Best3(ranked.take(3), 0)
     }
 
     /** Warms the caches for the other road modes after the first result, like the website does. */
-    fun prefetch(except: TravelMode, origin: LatLon, shelters: List<Shelter>) {
+    fun prefetch(except: TravelMode, origin: LatLon, shelters: List<Shelter>, isFull: (Shelter) -> Boolean = { false }) {
         // One mode at a time with a pause: the free public OSRM mirrors answer bursts with HTTP 429.
         scope.launch {
             listOf(TravelMode.WALK, TravelMode.BIKE, TravelMode.CAR).filter { it != except }.forEach { m ->
                 delay(PREFETCH_GAP_MS)
-                runCatching { best3(m, origin, shelters) }
+                runCatching { best3(m, origin, shelters, isFull) }
             }
         }
     }

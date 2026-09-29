@@ -12,6 +12,8 @@ val localProps = Properties().apply {
 }
 val revenueCatApiKey: String = localProps.getProperty("REVENUECAT_API_KEY", "").trim()
 val trafiklabApiKey: String = localProps.getProperty("TRAFIKLAB_API_KEY", "").trim()
+val supabaseUrl: String = localProps.getProperty("SUPABASE_URL", "").trim()
+val supabaseAnonKey: String = localProps.getProperty("SUPABASE_ANON_KEY", "").trim()
 
 android {
     namespace = "io.github.intealma.skyddsrum"
@@ -25,6 +27,8 @@ android {
         versionName = "1.0.0"
         buildConfigField("String", "REVENUECAT_API_KEY", "\"$revenueCatApiKey\"")
         buildConfigField("String", "TRAFIKLAB_API_KEY", "\"$trafiklabApiKey\"")
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
 
     buildTypes {

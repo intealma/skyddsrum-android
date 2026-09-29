@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -44,6 +45,8 @@ import io.github.intealma.skyddsrum.data.LatLon
 import io.github.intealma.skyddsrum.data.RouteNote
 import io.github.intealma.skyddsrum.data.RoutedShelter
 import io.github.intealma.skyddsrum.data.Shelter
+import io.github.intealma.skyddsrum.data.ShelterStatus
+import io.github.intealma.skyddsrum.ui.occupancyText
 import io.github.intealma.skyddsrum.data.TravelMode
 import io.github.intealma.skyddsrum.ui.MapFocus
 import io.github.intealma.skyddsrum.ui.Origin
@@ -67,6 +70,7 @@ fun MapScreen(
     focus: MapFocus?,
     selectedId: String?,
     routes: RoutesUi?,
+    statuses: Map<String, ShelterStatus>,
     locating: Boolean,
     onShelterTap: (Shelter) -> Unit,
     onLocate: () -> Unit,
@@ -127,6 +131,7 @@ fun MapScreen(
         if (routes != null || locating) {
             RoutesPanel(
                 routes = routes,
+                statuses = statuses,
                 locating = locating,
                 onModeChange = onModeChange,
                 onRouteTap = onRouteTap,
@@ -147,6 +152,7 @@ fun MapScreen(
 @Composable
 private fun RoutesPanel(
     routes: RoutesUi?,
+    statuses: Map<String, ShelterStatus>,
     locating: Boolean,
     onModeChange: (TravelMode) -> Unit,
     onRouteTap: (RoutedShelter, TravelMode) -> Unit,
@@ -200,13 +206,21 @@ private fun RoutesPanel(
                 modifier = Modifier.fillMaxWidth().panel().padding(12.dp),
             )
         } else {
-            routes.items.forEachIndexed { i, item -> RouteItem(i + 1, item) { onRouteTap(item, routes.mode) } }
+            if (routes.skippedFull > 0) {
+                Text(
+                    pluralStringResource(R.plurals.skipped_full, routes.skippedFull, routes.skippedFull),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextMuted,
+                    modifier = Modifier.fillMaxWidth().panel().padding(horizontal = 12.dp, vertical = 8.dp),
+                )
+            }
+            routes.items.forEachIndexed { i, item -> RouteItem(i + 1, item, statuses[item.shelter.id]) { onRouteTap(item, routes.mode) } }
         }
     }
 }
 
 @Composable
-private fun RouteItem(rank: Int, item: RoutedShelter, onClick: () -> Unit) {
+private fun RouteItem(rank: Int, item: RoutedShelter, status: ShelterStatus?, onClick: () -> Unit) {
     val r = item.route
     val parts = buildList {
         add(Geo.formatDistance(r.distanceKm * 1000))
@@ -218,6 +232,7 @@ private fun RouteItem(rank: Int, item: RoutedShelter, onClick: () -> Unit) {
             RouteNote.WALK_NO_TRANSIT -> add(stringResource(R.string.walk_no_transit))
             null -> Unit
         }
+        occupancyText(status, item.shelter.capacity)?.let { add(it) }
     }
     Row(
         Modifier.fillMaxWidth().panel().clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 10.dp),

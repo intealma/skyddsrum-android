@@ -35,6 +35,10 @@ import io.github.intealma.skyddsrum.R
 import io.github.intealma.skyddsrum.data.Geo
 import io.github.intealma.skyddsrum.data.Shelter
 import io.github.intealma.skyddsrum.data.TransitStep
+import io.github.intealma.skyddsrum.data.ActivityEvent
+import io.github.intealma.skyddsrum.data.ShelterStatus
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import io.github.intealma.skyddsrum.ui.map.modeLabel
 import io.github.intealma.skyddsrum.ui.theme.Red
 import androidx.compose.material3.HorizontalDivider
@@ -51,6 +55,10 @@ import io.github.intealma.skyddsrum.ui.theme.TextMuted
 @Composable
 fun ShelterDetailSheet(
     selection: Selection,
+    liveAvailable: Boolean,
+    status: ShelterStatus?,
+    activity: List<ActivityEvent>?,
+    liveConfigured: Boolean,
     onShowOnMap: (Shelter) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -67,7 +75,10 @@ fun ShelterDetailSheet(
             Box(Modifier.padding(top = 10.dp, bottom = 14.dp).size(36.dp, 4.dp).clip(RoundedCornerShape(3.dp)).background(Line))
         },
     ) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding()) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding(),
+        ) {
             Row {
                 ShelterMark(36.dp)
                 Spacer(Modifier.width(14.dp))
@@ -107,6 +118,12 @@ fun ShelterDetailSheet(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 PrimaryButton(stringResource(R.string.directions), onClick = { openDirections(context, s) }, modifier = Modifier.weight(1f))
                 SecondaryButton(stringResource(R.string.show_on_map), onClick = { onShowOnMap(s) }, modifier = Modifier.weight(1f))
+            }
+            if (liveConfigured) {
+                Spacer(Modifier.height(18.dp))
+                HorizontalDivider(color = Line)
+                Spacer(Modifier.height(14.dp))
+                LiveDashboard(liveAvailable, status, s.capacity, activity)
             }
         }
     }

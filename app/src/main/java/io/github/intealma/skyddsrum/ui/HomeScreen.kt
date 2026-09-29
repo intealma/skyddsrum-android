@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.intealma.skyddsrum.R
+import io.github.intealma.skyddsrum.data.LiveSnapshot
 import io.github.intealma.skyddsrum.data.ShelterWithDistance
 import io.github.intealma.skyddsrum.ui.theme.TextFaint
 import io.github.intealma.skyddsrum.ui.theme.TextMuted
@@ -33,6 +34,9 @@ fun HomeScreen(
     locating: Boolean,
     message: Int?,
     nearest: List<ShelterWithDistance>,
+    live: LiveSnapshot?,
+    liveConfigured: Boolean,
+    addressOf: (String) -> String?,
     onFindNearest: () -> Unit,
     onChangeOrigin: () -> Unit,
     onOpen: (ShelterWithDistance) -> Unit,
@@ -59,6 +63,10 @@ fun HomeScreen(
             if (message != null) {
                 Spacer(Modifier.height(10.dp))
                 Text(stringResource(message), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            }
+            if (liveConfigured) {
+                Spacer(Modifier.height(20.dp))
+                LiveHomeSection(live, addressOf)
             }
             Spacer(Modifier.height(20.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -88,7 +96,7 @@ fun HomeScreen(
             }
         }
         itemsIndexed(nearest, key = { _, it -> it.shelter.id }) { index, item ->
-            ShelterRow(index + 1, item, onClick = { onOpen(item) })
+            ShelterRow(index + 1, item, onClick = { onOpen(item) }, status = live?.statuses?.get(item.shelter.id))
         }
         item {
             Spacer(Modifier.height(12.dp))

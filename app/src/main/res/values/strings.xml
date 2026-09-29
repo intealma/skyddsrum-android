@@ -103,4 +103,53 @@
     <string name="step_walk_to">Walk to %1$s</string>
     <string name="step_change_at">Change at %1$s</string>
     <string name="step_towards">%1$s towards %2$s</string>
+
+    <!-- Live check-in status (read-only, from the website's backend) -->
+    <string name="live">Live</string>
+    <string name="live_summary">%1$d people checked in at %2$d shelters</string>
+    <string name="live_empty">No one is checked in right now.</string>
+    <string name="live_unavailable">Live status unavailable.</string>
+    <string name="live_arrivals">Latest arrivals</string>
+    <string name="live_arrival">%1$d checked in · %2$s</string>
+    <string name="checked_in_n">%1$d checked in</string>
+    <string name="live_source">Check-ins are made on the Shelter Locator website.</string>
+    <string name="just_now">just now</string>
+    <string name="minutes_ago">%1$d min ago</string>
+    <string name="hours_ago">%1$d h ago</string>
+    <string name="inside">%1$d inside</string>
+    <string name="full">full</string>
+    <plurals name="skipped_full">
+        <item quantity="one">%1$d nearer shelter skipped, at capacity</item>
+        <item quantity="other">%1$d nearer shelters skipped, at capacity</item>
+    </plurals>
+    <string name="people_sheltered">People sheltered</string>
+    <string name="percent_full">%1$d%% full</string>
+    <string name="nobody_here">No one checked in here yet.</string>
+    <string name="current_needs">Current needs</string>
+    <string name="people_skills">People &amp; skills</string>
+    <string name="resources">Resources</string>
+    <string name="recent_activity">Recent activity</string>
+    <string name="water">Water</string>
+    <string name="food">Food</string>
+    <string name="medical_staff">Medical staff</string>
+    <string name="n_available">%1$d available</string>
+    <string name="none_available">None available</string>
+    <string name="level_low">Low</string>
+    <string name="level_moderate">Moderate</string>
+    <string name="level_good">Good</string>
+    <string name="no_data">No data yet</string>
+    <string name="adults">Adults</string>
+    <string name="children">Children</string>
+    <string name="skill_medical">Medical</string>
+    <string name="skill_leadership">Leadership</string>
+    <string name="skill_technical">Technical</string>
+    <string name="skill_community">Community</string>
+    <string name="skill_volunteers">Volunteers</string>
+    <string name="special_needs">Special needs</string>
+    <string name="water_total">≈ %1$d L total</string>
+    <string name="food_total">≈ %1$d days total</string>
+    <string name="power_banks">Power banks</string>
+    <string name="first_aid_kits">First aid kits</string>
+    <string name="radios">Radios</string>
+    <string name="flashlights">Flashlights</string>
 </resources>
