@@ -28,9 +28,13 @@ people are stressed. This app is built for that situation:
 |---|---|---|---|
 | <img src="docs/screenshots/routes.png" width="200" /> | <img src="docs/screenshots/route_detail.png" width="200" /> | <img src="docs/screenshots/home.png" width="200" /> | <img src="docs/screenshots/map.png" width="200" /> |
 
+| Premium paywall (RevenueCat) | My places (unlocked) |
+|---|---|
+| <img src="docs/screenshots/paywall.png" width="200" /> | <img src="docs/screenshots/places.png" width="200" /> |
+
 ## Features
 
-| Free (core safety) | Premium (RevenueCat entitlement `premium`) |
+| Free (core safety) | Premium (RevenueCat entitlement `shelter_locator_premium`) |
 |---|---|
 | Map of all shelters with clustering (OpenStreetMap / osmdroid) | Save **Home, Work and School** |
 | **Find nearest shelter**: one tap shows the **3 best shelters by real travel time** with routes on the map | See the 3 nearest shelters for each saved place |
@@ -81,7 +85,7 @@ Run the unit tests (Haversine, sorting, formatting) with `./gradlew testDebugUni
 |---|---|
 | SDK | `com.revenuecat.purchases:purchases` and `purchases-ui` (10.x) |
 | Store | **RevenueCat Test Store**, so purchases work in the emulator without a Google Play account |
-| Entitlement | `premium` |
+| Entitlement | `shelter_locator_premium` |
 | Offering | `default`: monthly subscription, yearly subscription and a one-time **Supporter** purchase |
 | Paywall | RevenueCat Paywalls (`PaywallDialog`), designed in the RevenueCat dashboard |
 
@@ -89,10 +93,10 @@ Code: [`premium/Premium.kt`](app/src/main/java/io/github/intealma/skyddsrum/prem
 and [`ui/SkyddsrumAppUi.kt`](app/src/main/java/io/github/intealma/skyddsrum/ui/SkyddsrumAppUi.kt).
 
 - `Purchases.configure(...)` runs in `SkyddsrumApp.onCreate()` with the key from `BuildConfig`.
-- Entitlement status comes from `CustomerInfo` (`entitlements["premium"].isActive`), both at start
+- Entitlement status comes from `CustomerInfo` (`entitlements["shelter_locator_premium"].isActive`), both at start
   and through `UpdatedCustomerInfoListener`, and is exposed as a `StateFlow`. **Features unlock live**
   as soon as a purchase completes, with no restart needed.
-- Tapping a premium feature opens `PaywallDialog` with `setRequiredEntitlementIdentifier("premium")`.
+- Tapping a premium feature opens `PaywallDialog` with `setRequiredEntitlementIdentifier("shelter_locator_premium")`.
 - **Settings → Support the project** always opens the paywall; **Restore purchases** calls `awaitRestore()`.
 
 ### Dashboard setup (one time)
@@ -103,7 +107,7 @@ and [`ui/SkyddsrumAppUi.kt`](app/src/main/java/io/github/intealma/skyddsrum/ui/S
    - `premium_monthly`: subscription, 1 month
    - `premium_yearly`: subscription, 1 year
    - `supporter`: one-time purchase (non-consumable)
-3. Create the entitlement **`premium`** and attach all three products.
+3. Create the entitlement **`shelter_locator_premium`** and attach all three products.
 4. Create the offering **`default`** (mark it current) with packages *Monthly* → `premium_monthly`,
    *Annual* → `premium_yearly` and *Lifetime* → `supporter` (shown as "Supporter").
 5. Under *Paywalls*, create a paywall for the `default` offering.

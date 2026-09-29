@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 object Premium {
     /** Entitlement configured in the RevenueCat dashboard. */
-    const val ENTITLEMENT_ID = "premium"
+    const val ENTITLEMENT_ID = "shelter_locator_premium"
     private const val TAG = "Premium"
 
     private val _isPremium = MutableStateFlow(false)
@@ -46,6 +46,7 @@ object Premium {
     }
 
     fun update(info: CustomerInfo) {
+        Log.d(TAG, "Active entitlements: ${info.entitlements.active.keys}")
         _isPremium.value = info.entitlements[ENTITLEMENT_ID]?.isActive == true
     }
 
