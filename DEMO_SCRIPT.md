@@ -29,25 +29,28 @@ emulator's own recorder: *Extended controls → Record and playback*.
 > sixty thousand public shelters, but almost nobody knows theirs. **Skyddsrum** finds the closest one
 > in a single tap, and it works offline, because all 63,000 shelters are built into the app."
 
-### 2. Core flow: nearest shelter in Linköping, then directions (0:20–0:55)
+### 2. Core flow: nearest shelters in Linköping, routes, directions (0:20–1:00)
 
-*On screen:* tap **Find nearest shelter**, choose **Allow** in the permission dialog, and the detail sheet
-opens for the closest shelter.
+*On screen:* tap **Find nearest shelter**, choose **Allow**. The map opens with the **3 best shelters by travel time**:
+green routes grow from your position to three numbered shelters.
 
-> "One tap. The app gets my location, here in Linköping, and opens the closest shelter: the address,
-> how many people it holds, and how far away it is."
+> "One tap. It finds me here in Linköping and picks the three shelters I can reach fastest, by real travel
+> time, not just straight-line distance."
 
-*On screen:* tap **Directions**; the maps app opens with the route. Go back.
+*On screen:* switch **Walk → Bike → Car → Transit** in the mode bar; the list and routes update.
 
-> "Directions hands off to any maps app, and there's a web fallback."
+> "Walking, cycling, driving or public transport: the ranking changes with how you travel. Transit uses real
+> Swedish timetables, and if the shelter is closer than any bus stop, it simply tells you to walk."
 
-*On screen:* close the sheet and scroll the **Nearest shelters** list (10 items, m/km). Open the **Map**
-tab, zoom out to show the clusters, then zoom in and tap a single shelter.
+*On screen:* tap result **1**. The detail panel shows capacity, distance and travel time. Tap **Directions** and the maps app opens.
 
-> "The ten nearest are listed by distance, and the map shows every shelter in Sweden, clustered
-> so it stays fast. None of this is behind a paywall, and it never will be."
+> "Tap one for the details, and Directions hands off to your maps app."
 
-### 3. Monetization: paywall and test purchase (0:55–1:30)
+*On screen:* **Home** tab: the 10 nearest in a plain list, which works fully offline.
+
+> "And with no network at all, the full list of shelters is still on the phone. None of this is behind a paywall."
+
+### 3. Monetization: paywall and test purchase (1:00–1:30)
 
 *On screen:* **My places** tab, which shows the lock screen. Tap **Unlock with Premium** and the RevenueCat paywall appears.
 

@@ -10,6 +10,7 @@ coroutines = "1.11.0"
 osmdroid = "6.1.20"
 revenuecat = "10.23.2"
 junit = "4.13.2"
+json = "20240303"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,6 +29,7 @@ osmdroid = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "o
 revenuecat-purchases = { group = "com.revenuecat.purchases", name = "purchases", version.ref = "revenuecat" }
 revenuecat-purchases-ui = { group = "com.revenuecat.purchases", name = "purchases-ui", version.ref = "revenuecat" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+json = { group = "org.json", name = "json", version.ref = "json" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -97,11 +97,12 @@ private fun AppContent(vm: AppViewModel) {
     val mapFocus by vm.mapFocus.collectAsStateWithLifecycle()
     val isPremium by vm.isPremium.collectAsStateWithLifecycle()
     val savedPlaces by vm.savedPlaces.collectAsStateWithLifecycle()
+    val routes by vm.routes.collectAsStateWithLifecycle()
 
     var tab by rememberSaveable { mutableStateOf(Tab.HOME) }
     var showCityPicker by remember { mutableStateOf(false) }
-    /** Whether choosing a city should immediately open the closest shelter (the one-tap flow). */
-    var openClosestAfterPick by remember { mutableStateOf(false) }
+    /** Whether choosing a city should immediately route to the best shelters (the one-tap flow). */
+    var routesAfterPick by remember { mutableStateOf(false) }
     var paywall by remember { mutableStateOf<PaywallReason?>(null) }
     var restoring by remember { mutableStateOf(false) }
     var hasPermission by remember { mutableStateOf(vm.hasLocationPermission()) }
@@ -128,15 +129,17 @@ private fun AppContent(vm: AppViewModel) {
             permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
         }
     }
+    /** One tap: locate, then show the 3 best shelters with routes on the map (as on the website). */
     fun findNearest() {
-        openClosestAfterPick = true
+        routesAfterPick = true
+        tab = Tab.MAP
         val current = origin
         if (!vm.hasLocationPermission() && current != null && !current.isDeviceLocation) {
             // Location was declined earlier and a municipality is chosen: use it directly.
-            vm.openClosest()
+            vm.showRoutes()
             return
         }
-        withLocationPermission { vm.locate(openClosest = true, onFailed = { showCityPicker = true }) }
+        withLocationPermission { vm.locate(showRoutes = true, onFailed = { showCityPicker = true }) }
     }
     fun openPremiumFeature() {
         if (!isPremium) paywall = PaywallReason.FEATURE
@@ -181,7 +184,7 @@ private fun AppContent(vm: AppViewModel) {
                 message = message,
                 nearest = nearest,
                 onFindNearest = ::findNearest,
-                onChangeOrigin = { openClosestAfterPick = false; showCityPicker = true },
+                onChangeOrigin = { routesAfterPick = false; showCityPicker = true },
                 onOpen = vm::select,
                 modifier = contentModifier,
             )
@@ -195,9 +198,13 @@ private fun AppContent(vm: AppViewModel) {
                         origin = origin,
                         focus = mapFocus,
                         selectedId = highlightedId,
-                        hasLocationPermission = hasPermission,
+                        routes = routes,
+                        locating = locating,
                         onShelterTap = { vm.select(it) },
-                        onMyLocation = { if (!hasPermission) withLocationPermission { } },
+                        onLocate = { if (routes != null) vm.clearRoutes() else findNearest() },
+                        onModeChange = { vm.setTravelMode(it) },
+                        onRouteTap = vm::select,
+                        onCloseRoutes = vm::clearRoutes,
                         onFocusConsumed = vm::onMapFocusConsumed,
                         modifier = contentModifier,
                     )
@@ -245,9 +252,9 @@ private fun AppContent(vm: AppViewModel) {
         }
     }
 
-    selected?.let { item ->
+    selected?.let { selection ->
         ShelterDetailSheet(
-            item = item,
+            selection = selection,
             onShowOnMap = { shelter ->
                 vm.focusMapOn(shelter)
                 vm.dismissSelected()
@@ -262,11 +269,11 @@ private fun AppContent(vm: AppViewModel) {
             municipalities = municipalities,
             onPick = { place ->
                 showCityPicker = false
-                vm.chooseMunicipality(place, openClosest = openClosestAfterPick)
+                vm.chooseMunicipality(place, showRoutes = routesAfterPick)
             },
             onUseMyLocation = {
                 showCityPicker = false
-                withLocationPermission { vm.locate(openClosest = openClosestAfterPick, onFailed = { showCityPicker = true }) }
+                withLocationPermission { vm.locate(showRoutes = routesAfterPick, onFailed = { showCityPicker = true }) }
             },
             onDismiss = { showCityPicker = false },
         )

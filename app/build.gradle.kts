@@ -11,6 +11,7 @@ val localProps = Properties().apply {
     if (f.exists()) f.inputStream().use { load(it) }
 }
 val revenueCatApiKey: String = localProps.getProperty("REVENUECAT_API_KEY", "").trim()
+val trafiklabApiKey: String = localProps.getProperty("TRAFIKLAB_API_KEY", "").trim()
 
 android {
     namespace = "io.github.intealma.skyddsrum"
@@ -23,6 +24,7 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         buildConfigField("String", "REVENUECAT_API_KEY", "\"$revenueCatApiKey\"")
+        buildConfigField("String", "TRAFIKLAB_API_KEY", "\"$trafiklabApiKey\"")
     }
 
     buildTypes {
@@ -38,6 +40,9 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    testOptions {
+        unitTests.isReturnDefaultValues = true // android.util.Log in plain JVM tests
     }
     androidResources {
         generateLocaleConfig = true
@@ -61,4 +66,5 @@ dependencies {
     implementation(libs.revenuecat.purchases.ui)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
+    testImplementation(libs.json)
 }

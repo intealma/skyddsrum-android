@@ -4,7 +4,14 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.intealma.skyddsrum.BuildConfig
 import io.github.intealma.skyddsrum.R
+import io.github.intealma.skyddsrum.SkyddsrumApp
+import io.github.intealma.skyddsrum.data.LatLon
+import io.github.intealma.skyddsrum.data.Route
+import io.github.intealma.skyddsrum.data.RoutedShelter
+import io.github.intealma.skyddsrum.data.Router
+import io.github.intealma.skyddsrum.data.TravelMode
 import io.github.intealma.skyddsrum.data.Geo
 import io.github.intealma.skyddsrum.data.GeoPlace
 import io.github.intealma.skyddsrum.data.LocationProvider
@@ -15,6 +22,7 @@ import io.github.intealma.skyddsrum.data.ShelterRepository
 import io.github.intealma.skyddsrum.data.ShelterWithDistance
 import io.github.intealma.skyddsrum.premium.Premium
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** Where distances are measured from: the device position or a chosen municipality. */
@@ -31,6 +40,23 @@ data class Origin(val place: GeoPlace, val isDeviceLocation: Boolean)
 data class MapFocus(val lat: Double, val lon: Double, val zoom: Double, val nonce: Long = System.nanoTime())
 
 data class SavedPlaceInfo(val slot: PlaceSlot, val place: GeoPlace?, val nearest: List<ShelterWithDistance>)
+
+/** What the detail sheet shows: a shelter, plus its route when opened from the route list. */
+data class Selection(val item: ShelterWithDistance, val route: Route? = null, val mode: TravelMode? = null)
+
+/**
+ * The "3 best shelters by travel time" panel. [items] is the current ranking (may be interim, without
+ * route lines); [lines] are the drawn route lines, which keep showing the previous result until new
+ * geometry arrives, like the website. [linesVersion] changes whenever new lines should animate in.
+ */
+data class RoutesUi(
+    val origin: LatLon,
+    val mode: TravelMode,
+    val loading: Boolean,
+    val items: List<RoutedShelter>,
+    val lines: List<List<LatLon>>,
+    val linesVersion: Int,
+)
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -54,9 +80,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val _message = MutableStateFlow<Int?>(null)
     val message: StateFlow<Int?> = _message.asStateFlow()
 
-    private val _selected = MutableStateFlow<ShelterWithDistance?>(null)
+    private val _selected = MutableStateFlow<Selection?>(null)
     /** Shelter shown in the detail sheet. */
-    val selected: StateFlow<ShelterWithDistance?> = _selected.asStateFlow()
+    val selected: StateFlow<Selection?> = _selected.asStateFlow()
+
+    private val router = Router(
+        userAgent = "${BuildConfig.APPLICATION_ID}/${BuildConfig.VERSION_NAME} (+${SkyddsrumApp.SOURCE_URL})",
+        trafiklabKey = BuildConfig.TRAFIKLAB_API_KEY,
+    )
+    private val _routes = MutableStateFlow<RoutesUi?>(null)
+    val routes: StateFlow<RoutesUi?> = _routes.asStateFlow()
+    private var routesJob: Job? = null
 
     private val _highlightedId = MutableStateFlow<String?>(null)
     /** Shelter highlighted on the map; stays after the detail sheet closes. */
@@ -97,10 +131,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun hasLocationPermission() = location.hasPermission()
 
     /**
-     * Gets the device position and makes it the origin. With [openClosest], the closest shelter
-     * opens right away: the one-tap flow. Returns false (via [onFailed]) if no fix was available.
+     * Gets the device position and makes it the origin. With [showRoutes], the 3 best shelters by
+     * travel time are routed right away (the one-tap flow). Calls [onFailed] if no fix was available.
      */
-    fun locate(openClosest: Boolean, onFailed: () -> Unit = {}) {
+    fun locate(showRoutes: Boolean, onFailed: () -> Unit = {}) {
         if (_locating.value) return
         viewModelScope.launch {
             _locating.value = true
@@ -113,27 +147,67 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 return@launch
             }
             _origin.value = Origin(GeoPlace("", fix.latitude, fix.longitude), isDeviceLocation = true)
-            if (openClosest) openClosest()
+            if (showRoutes) showRoutes()
         }
     }
 
-    fun chooseMunicipality(place: GeoPlace, openClosest: Boolean) {
+    fun chooseMunicipality(place: GeoPlace, showRoutes: Boolean) {
         _message.value = null
         _origin.value = Origin(place, isDeviceLocation = false)
-        if (openClosest) openClosest()
+        if (showRoutes) showRoutes()
     }
 
     fun onPermissionDenied() {
         _message.value = R.string.permission_denied
     }
 
-    /** Opens the detail sheet for the closest shelter to the current origin. */
-    fun openClosest() {
+    /** Starts the route panel from the current origin, walking first (as on the website). */
+    fun showRoutes() {
+        val o = _origin.value?.place ?: return
+        val origin = LatLon(o.lat, o.lon)
+        val keepMode = _routes.value?.takeIf { it.origin == origin }?.mode
+        _routes.value = null
+        setTravelMode(keepMode ?: TravelMode.WALK, prefetchOthers = keepMode == null)
+    }
+
+    /** Ranks and routes the 3 best shelters for [mode]; the list shows first, the lines follow. */
+    fun setTravelMode(mode: TravelMode, prefetchOthers: Boolean = false) {
         val list = _shelters.value ?: return
-        val origin = _origin.value ?: return
-        viewModelScope.launch(Dispatchers.Default) {
-            Geo.nearest(list, origin.place.lat, origin.place.lon, 1).firstOrNull()?.let(::select)
+        val o = _origin.value?.place ?: return
+        val origin = LatLon(o.lat, o.lon)
+        val previous = _routes.value?.takeIf { it.origin == origin }
+        _routes.value = RoutesUi(
+            origin, mode, loading = true, items = emptyList(),
+            lines = previous?.lines ?: emptyList(), linesVersion = previous?.linesVersion ?: 0,
+        )
+        routesJob?.cancel()
+        routesJob = viewModelScope.launch {
+            val final = router.best3(mode, origin, list) { interim ->
+                _routes.update { cur -> cur?.takeIf { it.mode == mode }?.copy(loading = false, items = interim) ?: cur }
+            }
+            _routes.update { cur ->
+                cur?.takeIf { it.mode == mode }?.copy(
+                    loading = false,
+                    items = final,
+                    lines = final.map { it.route.points },
+                    linesVersion = cur.linesVersion + 1,
+                ) ?: cur
+            }
+            if (prefetchOthers) router.prefetch(mode, origin, list)
         }
+    }
+
+    fun clearRoutes() {
+        routesJob?.cancel()
+        _routes.value = null
+    }
+
+    fun select(routed: RoutedShelter, mode: TravelMode) {
+        val o = _origin.value?.place
+        val meters = if (o != null) Geo.haversineMeters(o.lat, o.lon, routed.shelter.lat, routed.shelter.lon) else Double.NaN
+        _selected.value = Selection(ShelterWithDistance(routed.shelter, meters), routed.route, mode)
+        _highlightedId.value = routed.shelter.id
+        _mapFocus.value = MapFocus(routed.shelter.lat, routed.shelter.lon, 16.0)
     }
 
     fun select(shelter: Shelter) {
@@ -143,7 +217,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun select(item: ShelterWithDistance) {
-        _selected.value = item
+        _selected.value = Selection(item)
         _highlightedId.value = item.shelter.id
     }
 

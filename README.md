@@ -24,17 +24,18 @@ people are stressed. This app is built for that situation:
 
 ## Screenshots
 
-| Home: 10 nearest | One tap: closest shelter | Clustered map |
-|---|---|---|
-| <img src="docs/screenshots/home.png" width="250" /> | <img src="docs/screenshots/detail.png" width="250" /> | <img src="docs/screenshots/map.png" width="250" /> |
+| One tap: 3 best by travel time | Route detail | Home: 10 nearest (offline) | Clustered map |
+|---|---|---|---|
+| <img src="docs/screenshots/routes.png" width="200" /> | <img src="docs/screenshots/route_detail.png" width="200" /> | <img src="docs/screenshots/home.png" width="200" /> | <img src="docs/screenshots/map.png" width="200" /> |
 
 ## Features
 
 | Free (core safety) | Premium (RevenueCat entitlement `premium`) |
 |---|---|
 | Map of all shelters with clustering (OpenStreetMap / osmdroid) | Save **Home, Work and School** |
-| **Find nearest shelter**: one tap to the closest one | See the 3 nearest shelters for each saved place |
-| List of the 10 nearest shelters with distance in m/km | Thank-you status in Settings |
+| **Find nearest shelter**: one tap shows the **3 best shelters by real travel time** with routes on the map | See the 3 nearest shelters for each saved place |
+| **Walk / Bike / Car / Transit** switch; transit shows step-by-step legs (bus, train, changes) | Thank-you status in Settings |
+| List of the 10 nearest shelters (straight line, fully offline) | |
 | Fallback when location is denied: choose a municipality | |
 | Shelter details: address, capacity, distance | |
 | **Directions** via `geo:` intent (any maps app), with OSM web fallback | |
@@ -52,7 +53,10 @@ Requirements: Android Studio (2026.1 or newer), Android SDK 37, an emulator such
    REVENUECAT_API_KEY=test_xxxxxxxxxxxxxxxxxxxxxxxx
    ```
 
-   The key is read by Gradle and exposed as `BuildConfig.REVENUECAT_API_KEY`
+   Optional: add `TRAFIKLAB_API_KEY=...` (free [ResRobot v2.1](https://www.trafiklab.se/api/our-apis/resrobot-v21/) key)
+   to get public-transit routes. Without it, transit falls back to a direct line.
+
+   The keys are read by Gradle and exposed as `BuildConfig.REVENUECAT_API_KEY` / `BuildConfig.TRAFIKLAB_API_KEY`
    (see [`app/build.gradle.kts`](app/build.gradle.kts)). Without a key the app still works;
    only purchases are disabled, and the app explains why.
 3. Start the emulator and install:
@@ -113,6 +117,11 @@ In the emulator, Test Store purchases show a RevenueCat test dialog where you ch
   but dropped: the [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/)
   forbids bulk downloading from `tile.openstreetmap.org`. The app sets an identifying user agent,
   only loads tiles you actually view, and uses osmdroid's normal cache. The **shelter data itself is fully offline**.
+- **Routing, same as the website.** Walk/bike/car: one OSRM Table request ranks the 30 closest shelters
+  (straight line) by real travel time, the best 3 show immediately, then full routes are drawn
+  ([`data/Routing.kt`](app/src/main/java/io/github/intealma/skyddsrum/data/Routing.kt)). Transit: the 8 closest are
+  planned with ResRobot (max 4 requests at once). Shelters closer than any stop get a walking route. Results are
+  cached per mode and position; without network the app draws a direct line, so it never leaves you without an answer.
 - **Map performance.** 63k markers would freeze osmdroid, so a custom overlay clusters shelters on a
   Web Mercator grid per zoom level (precomputed on a background thread) and draws them directly on the canvas.
 - **No Google Play services.** Location uses the platform `LocationManager`, so the app also works on
@@ -127,6 +136,9 @@ In the emulator, Test Store purchases show a RevenueCat test dialog where you ch
   The metadata states no conditions or restrictions on use. Municipality names were added by a spatial join
   with municipality borders. Conversion script: [`tools/convert_shelters.py`](tools/convert_shelters.py).
   The data may be out of date; always follow official information.
+- **Routes:** [OSRM](https://project-osrm.org/) via the public FOSSGIS servers at `routing.openstreetmap.de`
+  (fair use; a production app should run its own router). **Public transport:** ResRobot via
+  [Trafiklab](https://www.trafiklab.se/) (Samtrafiken).
 - **Map:** © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, ODbL. Rendered with
   [osmdroid](https://github.com/osmdroid/osmdroid) (Apache 2.0).
 - This is an independent project and **not an official app** from any authority. It uses no third-party logos.

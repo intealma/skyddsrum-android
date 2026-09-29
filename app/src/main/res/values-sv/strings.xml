@@ -70,9 +70,27 @@
     <string name="about_body">Hittar närmaste allmänna skyddsrum i Sverige. Data om skyddsrummen finns på enheten och fungerar utan internet.</string>
     <string name="data_source_title">Datakälla</string>
     <string name="data_source_body">Skyddsrumsdata: Myndigheten för civilt försvar (tidigare MSB), öppna data från INSPIRE-tjänsten \"Skyddsrum\". Kommunnamn tillagda av utvecklaren. Uppgifterna kan vara inaktuella.</string>
-    <string name="map_attribution">Kartdata © OpenStreetMap-bidragsgivare (ODbL).</string>
+    <string name="map_attribution">Kartdata © OpenStreetMap-bidragsgivare (ODbL). Rutter: OSRM (routing.openstreetmap.de). Kollektivtrafik: ResRobot via Trafiklab.</string>
     <string name="unofficial">Oberoende open source-projekt. Inte en officiell app.</string>
     <string name="license_body">MIT-licens</string>
     <string name="source_code">Källkod</string>
     <string name="version">Version %1$s</string>
+
+    <string name="mode_walk">Gå</string>
+    <string name="mode_bike">Cykel</string>
+    <string name="mode_car">Bil</string>
+    <string name="mode_transit">Kollektivt</string>
+    <string name="routes_loading">Söker snabbaste vägarna…</string>
+    <string name="minutes">%1$d min</string>
+    <string name="direct_line">fågelvägen</string>
+    <string name="transit_no_key">lägg till Trafiklab-nyckel för kollektivtrafik</string>
+    <string name="transit_failed">kollektivtrafik kunde inte hämtas</string>
+    <string name="walk_no_transit">gå, ingen kollektivtrafik behövs</string>
+    <string name="route_steps">Resväg</string>
+    <string name="step_walk">Gå</string>
+    <string name="step_ride">Åk</string>
+    <string name="step_switch">Byte</string>
+    <string name="step_walk_to">Gå till %1$s</string>
+    <string name="step_change_at">Byte vid %1$s</string>
+    <string name="step_towards">%1$s mot %2$s</string>
 </resources>

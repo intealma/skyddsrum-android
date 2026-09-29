@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -35,7 +34,14 @@ import androidx.compose.ui.unit.dp
 import io.github.intealma.skyddsrum.R
 import io.github.intealma.skyddsrum.data.Geo
 import io.github.intealma.skyddsrum.data.Shelter
-import io.github.intealma.skyddsrum.data.ShelterWithDistance
+import io.github.intealma.skyddsrum.data.TransitStep
+import io.github.intealma.skyddsrum.ui.map.modeLabel
+import io.github.intealma.skyddsrum.ui.theme.Red
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import kotlin.math.max
+import kotlin.math.roundToInt
 import io.github.intealma.skyddsrum.ui.theme.Line
 import io.github.intealma.skyddsrum.ui.theme.Panel
 import io.github.intealma.skyddsrum.ui.theme.PanelRaised
@@ -44,11 +50,13 @@ import io.github.intealma.skyddsrum.ui.theme.TextMuted
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShelterDetailSheet(
-    item: ShelterWithDistance,
+    selection: Selection,
     onShowOnMap: (Shelter) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
+    val item = selection.item
+    val route = selection.route
     val s = item.shelter
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -76,11 +84,24 @@ fun ShelterDetailSheet(
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Stat(stringResource(R.string.capacity), pluralStringResource(R.plurals.capacity_people, s.capacity, s.capacity), Modifier.weight(1f))
-                Stat(
-                    stringResource(R.string.distance),
-                    if (item.meters.isNaN()) "–" else Geo.formatDistance(item.meters),
-                    Modifier.weight(1f),
-                )
+                val meters = route?.distanceKm?.times(1000) ?: item.meters
+                Stat(stringResource(R.string.distance), if (meters.isNaN()) "–" else Geo.formatDistance(meters), Modifier.weight(1f))
+                if (route?.durationMin != null && selection.mode != null) {
+                    Stat(
+                        stringResource(modeLabel(selection.mode)),
+                        stringResource(R.string.minutes, max(1, route.durationMin.roundToInt())),
+                        Modifier.weight(1f),
+                    )
+                }
+            }
+            route?.steps?.takeIf { it.isNotEmpty() }?.let { steps ->
+                Spacer(Modifier.height(14.dp))
+                SectionLabel(stringResource(R.string.route_steps))
+                Spacer(Modifier.height(4.dp))
+                steps.forEachIndexed { i, step ->
+                    TransitStepRow(step)
+                    if (i < steps.lastIndex) HorizontalDivider(color = Line)
+                }
             }
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -90,6 +111,40 @@ fun ShelterDetailSheet(
         }
     }
 }
+
+@Composable
+private fun TransitStepRow(step: TransitStep) {
+    val (badge, label, detail) = when (step) {
+        is TransitStep.Walk -> Triple(R.string.step_walk, stringResource(R.string.step_walk_to, step.to), times(step.dep, step.arr))
+        is TransitStep.Transfer -> Triple(R.string.step_switch, stringResource(R.string.step_change_at, step.at), times(step.dep, step.arr))
+        is TransitStep.Ride -> Triple(
+            R.string.step_ride,
+            if (step.towards != null) stringResource(R.string.step_towards, step.line, step.towards) else step.line,
+            "${step.from} ${step.dep} → ${step.to} ${step.arr}",
+        )
+    }
+    val ride = step is TransitStep.Ride
+    val shape = RoundedCornerShape(4.dp)
+    Row(Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
+        Box(
+            Modifier.width(44.dp).height(22.dp).clip(shape)
+                .background(if (ride) Red else BadgeGrey)
+                .border(1.dp, if (ride) Red else Line, shape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(stringResource(badge).uppercase(), style = MaterialTheme.typography.labelSmall, color = if (ride) Color.White else TextMuted)
+        }
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.titleSmall)
+            if (detail.isNotBlank()) Text(detail, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+        }
+    }
+}
+
+private fun times(dep: String, arr: String) = if (dep.isNotBlank() && arr.isNotBlank()) "$dep → $arr" else ""
+
+private val BadgeGrey = Color(0xFF1C1F27)
 
 @Composable
 private fun Stat(label: String, value: String, modifier: Modifier = Modifier) {
