@@ -9,22 +9,21 @@
     <string name="tab_settings">Settings</string>
 
     <!-- Home -->
-    <string name="home_tagline">%1$s public shelters in Sweden. Works offline.</string>
+    <string name="home_tagline">%1$s shelters</string>
     <string name="loading_shelters">Loading shelters…</string>
     <string name="find_nearest">Find nearest shelter</string>
-    <string name="find_nearest_sub">One tap to the closest one</string>
-    <string name="nearest_title">Nearest shelters</string>
+    <string name="nearest_title">Nearest</string>
     <string name="from_origin">From: %1$s</string>
     <string name="your_location">your location</string>
     <string name="change">Change</string>
-    <string name="locating">Finding your location…</string>
-    <string name="permission_denied">Location is not allowed. Choose a municipality instead.</string>
-    <string name="location_unavailable">Could not get your location. Choose a municipality instead.</string>
-    <string name="nearest_empty">Tap the button above, or choose a municipality, to list the 10 closest shelters.</string>
+    <string name="locating">Locating…</string>
+    <string name="permission_denied">Location not allowed. Choose a municipality.</string>
+    <string name="location_unavailable">No location available. Choose a municipality.</string>
+    <string name="nearest_empty">Tap the button or choose a municipality.</string>
     <string name="choose_city">Choose municipality</string>
     <string name="use_my_location">Use my location</string>
     <string name="search_city">Search municipality</string>
-    <string name="emergency_info">In an emergency, call 112. Official alerts (VMA) are broadcast on Sveriges Radio P4 and published on krisinformation.se.</string>
+    <string name="emergency_info">Emergency: 112 · krisinformation.se</string>
 
     <!-- Shelter detail -->
     <string name="shelter_number">Shelter no. %1$s</string>
@@ -34,12 +33,10 @@
         <item quantity="other">%1$d people</item>
     </plurals>
     <string name="distance">Distance</string>
-    <string name="distance_unknown">Choose a location to see distance</string>
     <string name="municipality">Municipality</string>
     <string name="directions">Directions</string>
     <string name="show_on_map">Show on map</string>
     <string name="no_maps_app">No maps app or browser found</string>
-    <string name="shelter_note">Shelters are made ready by the property owner when the government decides so. Always follow instructions from the authorities.</string>
 
     <!-- Map -->
     <string name="my_location">My location</string>
@@ -47,7 +44,7 @@
     <!-- Premium: saved places -->
     <string name="premium">Premium</string>
     <string name="places_title">My places</string>
-    <string name="places_subtitle">Save Home, Work and School and see the nearest shelters to each one.</string>
+    <string name="places_subtitle">Nearest shelters to your saved places.</string>
     <string name="place_home">Home</string>
     <string name="place_work">Work</string>
     <string name="place_school">School</string>
@@ -61,30 +58,30 @@
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="unlock_premium">Unlock with Premium</string>
-    <string name="premium_locked_body">Finding shelters is always free. Premium supports the project and lets you save your everyday places, each with its nearest shelters.</string>
+    <string name="premium_locked_body">Save Home, Work and School and see the nearest shelters for each. Finding shelters is always free.</string>
     <string name="rc_not_configured_title">Purchases unavailable</string>
-    <string name="rc_not_configured">Purchases are not set up in this build: the RevenueCat API key is missing. Add REVENUECAT_API_KEY to local.properties (see README).</string>
+    <string name="rc_not_configured">The RevenueCat API key is missing in this build. Add REVENUECAT_API_KEY to local.properties.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
-    <string name="status_premium">Premium active. Thank you for your support!</string>
-    <string name="status_free">Free version. All safety features included.</string>
+    <string name="status_premium">Active</string>
+    <string name="status_free">Not active</string>
     <string name="support_project">Support the project</string>
-    <string name="support_project_sub">Subscription or a one-time Supporter purchase</string>
+    <string name="support_project_sub">Monthly, yearly or one-time</string>
     <string name="restore_purchases">Restore purchases</string>
     <string name="restore_premium">Purchases restored. Premium is active.</string>
     <string name="restore_none">No previous purchases found.</string>
     <string name="restore_failed">Could not restore purchases: %1$s</string>
-    <string name="language_hint">The app follows your phone language (English or Svenska). You can also change it per app in Android settings.</string>
+    <string name="language_hint">Language follows the phone (English / Svenska).</string>
 
     <!-- About -->
     <string name="about_title">About</string>
-    <string name="about_body">Skyddsrum helps you find the nearest public shelter in Sweden, fast. All shelter data is bundled in the app, so the list works without internet.</string>
+    <string name="about_body">Finds the nearest public shelter in Sweden. The shelter data is stored on the device and works without internet.</string>
     <string name="data_source_title">Data source</string>
-    <string name="data_source_body">Shelter locations and capacities: Myndigheten för civilt försvar (formerly MSB), open data from the INSPIRE service \"Skyddsrum\" (no usage restrictions). Municipality names were added by matching positions to municipality borders. The data may be out of date. Always follow official information.</string>
-    <string name="map_attribution">Map data © OpenStreetMap contributors, available under the Open Database License (ODbL).</string>
-    <string name="unofficial">This is an independent open-source project, not an official app from any authority.</string>
-    <string name="license_body">Source code: MIT License.</string>
-    <string name="source_code">Source code on GitHub</string>
+    <string name="data_source_body">Shelter data: Myndigheten för civilt försvar (formerly MSB), open data from the INSPIRE service \"Skyddsrum\". Municipality names added by the author. Data may be out of date.</string>
+    <string name="map_attribution">Map data © OpenStreetMap contributors (ODbL).</string>
+    <string name="unofficial">Independent open-source project. Not an official app.</string>
+    <string name="license_body">MIT License</string>
+    <string name="source_code">Source code</string>
     <string name="version">Version %1$s</string>
 </resources>

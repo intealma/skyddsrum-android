@@ -36,7 +36,8 @@ class LocationProvider(private val context: Context) {
         // In an emergency speed matters more than a perfect fix: a fix from the last two minutes is good enough.
         if (lastKnown != null && System.currentTimeMillis() - lastKnown.time < RECENT_MS) return lastKnown
 
-        val fresh = withTimeoutOrNull(timeoutMs) {
+        // With an older fix to fall back on, don't keep people waiting long for a new one.
+        val fresh = withTimeoutOrNull(if (lastKnown != null) FALLBACK_WAIT_MS else timeoutMs) {
             providers.firstNotNullOfOrNull { provider -> requestOnce(lm, provider) }
         }
         return fresh ?: lastKnown
@@ -54,5 +55,6 @@ class LocationProvider(private val context: Context) {
 
     private companion object {
         const val RECENT_MS = 2 * 60 * 1000L
+        const val FALLBACK_WAIT_MS = 3_000L
     }
 }

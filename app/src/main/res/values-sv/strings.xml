@@ -5,22 +5,21 @@
     <string name="tab_places">Mina platser</string>
     <string name="tab_settings">Inställningar</string>
 
-    <string name="home_tagline">%1$s allmänna skyddsrum i Sverige. Fungerar offline.</string>
+    <string name="home_tagline">%1$s skyddsrum</string>
     <string name="loading_shelters">Laddar skyddsrum…</string>
     <string name="find_nearest">Hitta närmaste skyddsrum</string>
-    <string name="find_nearest_sub">Ett tryck till det närmaste</string>
-    <string name="nearest_title">Närmaste skyddsrum</string>
+    <string name="nearest_title">Närmast</string>
     <string name="from_origin">Från: %1$s</string>
     <string name="your_location">din position</string>
     <string name="change">Ändra</string>
-    <string name="locating">Hämtar din position…</string>
-    <string name="permission_denied">Platsåtkomst är inte tillåten. Välj en kommun istället.</string>
-    <string name="location_unavailable">Kunde inte hämta din position. Välj en kommun istället.</string>
-    <string name="nearest_empty">Tryck på knappen ovan, eller välj en kommun, för att se de 10 närmaste skyddsrummen.</string>
+    <string name="locating">Söker position…</string>
+    <string name="permission_denied">Platsåtkomst saknas. Välj en kommun.</string>
+    <string name="location_unavailable">Ingen position tillgänglig. Välj en kommun.</string>
+    <string name="nearest_empty">Tryck på knappen eller välj en kommun.</string>
     <string name="choose_city">Välj kommun</string>
     <string name="use_my_location">Använd min position</string>
     <string name="search_city">Sök kommun</string>
-    <string name="emergency_info">Vid nödläge, ring 112. Viktigt meddelande till allmänheten (VMA) sänds i Sveriges Radio P4 och publiceras på krisinformation.se.</string>
+    <string name="emergency_info">Nödläge: 112 · krisinformation.se</string>
 
     <string name="shelter_number">Skyddsrum nr %1$s</string>
     <string name="capacity">Kapacitet</string>
@@ -29,18 +28,16 @@
         <item quantity="other">%1$d personer</item>
     </plurals>
     <string name="distance">Avstånd</string>
-    <string name="distance_unknown">Välj en plats för att se avstånd</string>
     <string name="municipality">Kommun</string>
     <string name="directions">Vägbeskrivning</string>
     <string name="show_on_map">Visa på kartan</string>
     <string name="no_maps_app">Ingen kartapp eller webbläsare hittades</string>
-    <string name="shelter_note">Skyddsrum iordningställs av fastighetsägaren när regeringen beslutar det. Följ alltid myndigheternas instruktioner.</string>
 
     <string name="my_location">Min position</string>
 
     <string name="premium">Premium</string>
     <string name="places_title">Mina platser</string>
-    <string name="places_subtitle">Spara Hem, Jobb och Skola och se de närmaste skyddsrummen för varje plats.</string>
+    <string name="places_subtitle">Närmaste skyddsrum för dina sparade platser.</string>
     <string name="place_home">Hem</string>
     <string name="place_work">Jobb</string>
     <string name="place_school">Skola</string>
@@ -54,28 +51,28 @@
     <string name="cancel">Avbryt</string>
     <string name="ok">OK</string>
     <string name="unlock_premium">Lås upp med Premium</string>
-    <string name="premium_locked_body">Att hitta skyddsrum är alltid gratis. Premium stöder projektet och låter dig spara dina vardagsplatser, var och en med sina närmaste skyddsrum.</string>
+    <string name="premium_locked_body">Spara Hem, Jobb och Skola och se de närmaste skyddsrummen för varje plats. Att hitta skyddsrum är alltid gratis.</string>
     <string name="rc_not_configured_title">Köp är inte tillgängliga</string>
-    <string name="rc_not_configured">Köp är inte konfigurerade i den här versionen: RevenueCat-nyckeln saknas. Lägg till REVENUECAT_API_KEY i local.properties (se README).</string>
+    <string name="rc_not_configured">RevenueCat-nyckeln saknas i den här versionen. Lägg till REVENUECAT_API_KEY i local.properties.</string>
 
     <string name="settings_title">Inställningar</string>
-    <string name="status_premium">Premium är aktivt. Tack för ditt stöd!</string>
-    <string name="status_free">Gratisversion. Alla säkerhetsfunktioner ingår.</string>
+    <string name="status_premium">Aktivt</string>
+    <string name="status_free">Inte aktivt</string>
     <string name="support_project">Stöd projektet</string>
-    <string name="support_project_sub">Prenumeration eller ett engångsköp som Supporter</string>
+    <string name="support_project_sub">Månad, år eller engång</string>
     <string name="restore_purchases">Återställ köp</string>
     <string name="restore_premium">Köpen är återställda. Premium är aktivt.</string>
     <string name="restore_none">Inga tidigare köp hittades.</string>
     <string name="restore_failed">Kunde inte återställa köp: %1$s</string>
-    <string name="language_hint">Appen följer telefonens språk (Svenska eller English). Du kan också byta språk för appen i Androids inställningar.</string>
+    <string name="language_hint">Språket följer telefonen (Svenska / English).</string>
 
     <string name="about_title">Om appen</string>
-    <string name="about_body">Skyddsrum hjälper dig att snabbt hitta närmaste allmänna skyddsrum i Sverige. All data om skyddsrum finns i appen, så listan fungerar utan internet.</string>
+    <string name="about_body">Hittar närmaste allmänna skyddsrum i Sverige. Data om skyddsrummen finns på enheten och fungerar utan internet.</string>
     <string name="data_source_title">Datakälla</string>
-    <string name="data_source_body">Skyddsrummens läge och kapacitet: Myndigheten för civilt försvar (tidigare MSB), öppna data från INSPIRE-tjänsten \"Skyddsrum\" (inga användningsbegränsningar). Kommunnamn har lagts till genom att matcha positioner mot kommungränser. Uppgifterna kan vara inaktuella. Följ alltid officiell information.</string>
-    <string name="map_attribution">Kartdata © OpenStreetMap-bidragsgivare, tillgänglig under Open Database License (ODbL).</string>
-    <string name="unofficial">Detta är ett oberoende open source-projekt, inte en officiell app från någon myndighet.</string>
-    <string name="license_body">Källkod: MIT-licens.</string>
-    <string name="source_code">Källkod på GitHub</string>
+    <string name="data_source_body">Skyddsrumsdata: Myndigheten för civilt försvar (tidigare MSB), öppna data från INSPIRE-tjänsten \"Skyddsrum\". Kommunnamn tillagda av utvecklaren. Uppgifterna kan vara inaktuella.</string>
+    <string name="map_attribution">Kartdata © OpenStreetMap-bidragsgivare (ODbL).</string>
+    <string name="unofficial">Oberoende open source-projekt. Inte en officiell app.</string>
+    <string name="license_body">MIT-licens</string>
+    <string name="source_code">Källkod</string>
     <string name="version">Version %1$s</string>
 </resources>

@@ -2,7 +2,9 @@ package io.github.intealma.skyddsrum.ui.map
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.Point
+import android.graphics.Typeface
 import android.view.MotionEvent
 import io.github.intealma.skyddsrum.data.Shelter
 import org.osmdroid.util.GeoPoint
@@ -15,7 +17,6 @@ import kotlin.math.PI
 import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.ln
-import kotlin.math.log10
 import kotlin.math.tan
 
 /**
@@ -27,6 +28,7 @@ import kotlin.math.tan
 class ShelterClusterOverlay(
     private val shelters: List<Shelter>,
     private val density: Float,
+    typeface: Typeface?,
     private val onShelterTap: (Shelter) -> Unit,
 ) : Overlay() {
 
@@ -40,17 +42,25 @@ class ShelterClusterOverlay(
     private val point = Point()
     private val geo = GeoPoint(0.0, 0.0)
 
-    private val singlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = AMBER }
-    private val clusterPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = TEAL; alpha = 225 }
-    private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE; color = TEAL; strokeWidth = 2f * density
+    // Styling follows the website: dark clusters with a white ring, white outline shelter marks, red selection.
+    private val clusterFill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xE60A0B0F.toInt() }
+    private val clusterRing = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE; color = LINE_WHITE; strokeWidth = 1.4f * density
     }
-    private val haloPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE; color = 0xFFD32F2F.toInt(); strokeWidth = 4f * density
+    private val markStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE; color = LINE_WHITE; strokeWidth = 1.6f * density; strokeJoin = Paint.Join.ROUND
+    }
+    private val markFill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF000000.toInt() }
+    private val selectedHalo = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = RED; alpha = 64 }
+    private val selectedDot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = RED }
+    private val selectedRing = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE; color = 0xFFFFFFFF.toInt(); strokeWidth = 2f * density
     }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFFFFFFF.toInt(); textAlign = Paint.Align.CENTER; textSize = 12f * density; isFakeBoldText = true
+        color = LINE_WHITE; textAlign = Paint.Align.CENTER; textSize = 11f * density
+        if (typeface != null) this.typeface = typeface
     }
+    private val triangle = Path()
 
     init {
         // Warm the cache for the zoom levels people use most, off the UI thread.
@@ -102,20 +112,24 @@ class ShelterClusterOverlay(
             val x = point.x.toFloat()
             val y = point.y.toFloat()
             if (c.shelter != null) {
-                val r = 7f * density
-                canvas.drawCircle(x, y, r, singlePaint)
-                canvas.drawCircle(x, y, r, strokePaint)
-                val d = Drawn(x, y, r, c)
+                val half = 7f * density
+                drawMark(canvas, x, y, half)
+                val d = Drawn(x, y, half, c)
                 drawn += d
                 if (c.shelter.id == selectedId) selected = d
             } else {
-                val r = (13f + 4f * log10(c.count.toFloat())) * density
-                canvas.drawCircle(x, y, r, clusterPaint)
+                val r = clusterRadius(c.count) * density
+                canvas.drawCircle(x, y, r, clusterFill)
+                canvas.drawCircle(x, y, r, clusterRing)
                 canvas.drawText(label(c.count), x, y - (textPaint.ascent() + textPaint.descent()) / 2, textPaint)
                 drawn += Drawn(x, y, r, c)
             }
         }
-        selected?.let { canvas.drawCircle(it.x, it.y, it.radius + 5f * density, haloPaint) }
+        selected?.let {
+            canvas.drawCircle(it.x, it.y, 14f * density, selectedHalo)
+            canvas.drawCircle(it.x, it.y, 6f * density, selectedDot)
+            canvas.drawCircle(it.x, it.y, 6f * density, selectedRing)
+        }
     }
 
     override fun onSingleTapConfirmed(e: MotionEvent, mapView: MapView): Boolean {
@@ -134,6 +148,29 @@ class ShelterClusterOverlay(
         return true
     }
 
+    /** Outline square with a triangle inside, like the website's map icon. */
+    private fun drawMark(canvas: Canvas, x: Float, y: Float, half: Float) {
+        canvas.drawRect(x - half, y - half, x + half, y + half, markFill)
+        canvas.drawRect(x - half, y - half, x + half, y + half, markStroke)
+        triangle.reset()
+        triangle.moveTo(x, y - half * 0.55f)
+        triangle.lineTo(x + half * 0.6f, y + half * 0.45f)
+        triangle.lineTo(x - half * 0.6f, y + half * 0.45f)
+        triangle.close()
+        canvas.drawPath(triangle, markStroke)
+    }
+
+    /** Radius in dp by count, same steps as the website (1→9, 20→12, 100→17, 1000→24, 8000→32). */
+    private fun clusterRadius(n: Int): Float {
+        val stops = floatArrayOf(1f, 20f, 100f, 1000f, 8000f)
+        val radii = floatArrayOf(9f, 12f, 17f, 24f, 32f)
+        val v = n.toFloat()
+        if (v >= stops.last()) return radii.last()
+        val i = stops.indexOfLast { it <= v }.coerceAtLeast(0)
+        val t = (v - stops[i]) / (stops[i + 1] - stops[i])
+        return radii[i] + t * (radii[i + 1] - radii[i])
+    }
+
     private fun label(n: Int) = if (n >= 1000) "${n / 1000}k" else n.toString()
 
     companion object {
@@ -141,8 +178,8 @@ class ShelterClusterOverlay(
         const val SINGLE_ZOOM = 15
         private const val MIN_CLUSTER_ZOOM = 3
         private const val CELL_DP = 56.0
-        private const val TEAL = 0xFF123C44.toInt()
-        private const val AMBER = 0xFFF4B942.toInt()
+        private const val LINE_WHITE = 0xFFF7F7F5.toInt()
+        private const val RED = 0xFFFF3B3B.toInt()
 
         private fun mercX(lon: Double) = (lon + 180.0) / 360.0
         private fun mercY(lat: Double): Double {

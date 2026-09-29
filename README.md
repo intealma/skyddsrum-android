@@ -104,6 +104,11 @@ In the emulator, Test Store purchases show a RevenueCat test dialog where you ch
 
 ## Design decisions
 
+- **Look and feel.** Same visual language as the Skyddsrum website: always dark, black background, white line
+  icons, one red accent, small uppercase labels, [Nunito Sans](https://github.com/googlefonts/NunitoSans)
+  (SIL Open Font License 1.1, see [`licenses/NunitoSans-OFL.txt`](licenses/NunitoSans-OFL.txt)), and the same
+  ASCII intro that dissolves on start (tap to skip). The map uses standard OSM tiles drawn in inverted greyscale
+  on the device.
 - **No bulk tile download.** Offline map tiles for a whole municipality were considered as a premium feature
   but dropped: the [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/)
   forbids bulk downloading from `tile.openstreetmap.org`. The app sets an identifying user agent,
